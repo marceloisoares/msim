@@ -118,3 +118,60 @@ class Test_Inport:
         assert inTier2.getValue()   == 2.0
         assert inTier3.getValue()   == 2.0
         
+# -------------------------------------------------------------------------
+# Blocks
+# -------------------------------------------------------------------------
+
+class Test_Gain:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        gain1 = mlib.Gain('gain1',float,2.0,None)
+
+        assert gain1.getName() == 'gain1'
+        assert gain1.getBlockType() == 'Gain'
+
+    def test_connect(self):
+        gain1 = mlib.Gain('gain1',float,2.0,None)
+        
+        # First connection:
+        outTest   = mlib.Outport('outTest',float,None)
+        outSource = mlib.Outport('outSource',float,None)
+
+        outTest.connectTo(gain1.getOutport('out'))
+        gain1.getInport('in').connectTo(outSource)
+
+        # Execute model:
+        outSource.setValue(2.0)
+        gain1.execute()
+
+        assert outTest.getValue() == 4.0
+
+    def test_dataflow(self):
+        # Create and connect sources:
+        outTier1 = mlib.Outport('outTier1',float,[])
+        outTier2 = mlib.Outport('outTier2',float,[])
+        outTier3 = mlib.Outport('outTier3',float,[])
+
+        outTier3.connectTo(outTier2)
+        outTier2.connectTo(outTier1)
+
+        # Force value on tier 1:
+        outTier1.setValue(2.0)
+
+        assert outTier2.getValue() == 2.0
+        assert outTier3.getValue() == 2.0

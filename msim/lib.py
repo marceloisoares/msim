@@ -110,4 +110,109 @@ class Inport(Port):
         return self._sourcePort.getValue()
 
 
+# -------------------------------------------------------------------------
+# Blocks:
+# -------------------------------------------------------------------------
 
+class Block(ABC):
+
+    def __init__(self):
+        # Basic properties:
+        self._name      = None
+        self._blockType = None
+        self._parent    = None
+
+        # Functional
+        self._inports   = []
+        self._outports  = []
+        self._subBlocks = []
+
+    # -------------
+    # Get/set
+    # -------------
+    def getName(self):
+        return self._name
+
+    def getBlockType(self):
+        return self._blockType
+
+    def getOutportValue(self, aName):
+        iPort = self.getOutport(aName).getValue()
+
+    def getInportValue(self, aName):
+        iPort = self.getInport(aName).getValue()            
+
+    def getOutport(self, aName):
+        for iPort in self._outports:
+            if(iPort.getName() == aName):
+                return iPort
+
+    def getInport(self, aName):
+        for iPort in self._inports:
+            if(iPort.getName() == aName):
+                return iPort
+
+    # -------------------
+    # Connectivity:
+    #  ------------------- 
+    def connectTo(self, inportName: str, aSourcePort: Port):
+        self.getInport(inportName).connectTo(aSourcePort)
+
+    # -------------------
+    # Helper methods:
+    #  ------------------- 
+    def dispOutport(self):
+        mhelp.dispPortStatus(self._outports)
+
+    def dispInport(self):
+        mhelp.dispPortStatus(self._inports)
+
+    # -------------------
+    # Simulate:
+    #  -------------------
+    def sim(self, simIn):
+        return mhelp.run(simIn)
+
+    @abstractmethod
+    def execute(self):
+        # Implement by each block
+        pass
+
+    @abstractmethod
+    def update(self):
+        # Implement by each block
+        pass
+    
+class Gain(Block):
+
+    def __init__(self,aName, aType, aGain, aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Gain'
+        self._parent    = aParent
+        self._gain      = aGain
+
+        # Ensure type is valid:
+        assert mhelp.isMsimNumType(aType)
+
+        # Inputs/Outports:
+        self._inports   = [Inport ('in', aType,aParent)]
+        self._outports  = [Outport('out',aType,aParent)]
+        self._subBlocks = []
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+        # Process inports:
+        out = self._inports[0].getValue() * self._gain
+        self._outports[0].setValue(out)
+        
+    def update(self):
+        # Do nothing
+        pass
+        
