@@ -1,0 +1,57 @@
+--------------------
+Virtual environment
+--------------------
+
+No windows:
+	Create:
+	python -m venv .venv
+	
+	Activate:
+	.venv\Scripts\activate
+	
+	Deactivate
+	deactivate
+	
+	Install mkdocs
+	pip install mkdocs
+	
+	
+	Update pip
+	python.exe -m pip install --upgrade pip
+	
+	To upgrade mkdocs
+	pip install mkdocs --upgrade
+	
+	pip install pytest
+	
+	Execution policy:
+	Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+	
+--------------------
+Git:
+--------------------	
+	# If you need to print to console
+	python -m pytest -v -s
+	
+--------------------
+Git:
+--------------------	
+	
+	git init
+	
+	# Show what is origin:
+	git remote show origin
+	
+	git pull origin main
+	git push origin main
+	
+	
+	
+	
+----------------------------	
+Running tests
+----------------------------	
+
+python -m pytest -v
+
+
