@@ -131,7 +131,7 @@ env.bak/
 venv.bak/
 
 # Vs code:
-.vscode
+# .vscode
 
 
 
