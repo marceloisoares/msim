@@ -258,3 +258,36 @@ class Gain(Block):
         # Do nothing
         pass
         
+class Delay(Block):
+
+    def __init__(self,aName, aType, aInitValue, aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Delay'
+        self._parent    = aParent
+
+        # Ensure type is valid:
+        assert mhelp.isMsimNumType(aType)
+
+        # Inputs/Outports:
+        self._inports   = [Inport ('u', aType,aParent)]
+        self._outports  = [Outport('y',aType,aParent)]
+        self._subBlocks = []
+
+        self._outports[0].setValue(aInitValue)
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+        # Process inports:
+        self._internalValue =self._inports[0].getValue()
+        
+    def update(self):
+        # Do nothing
+        self._outports[0].setValue(self._internalValue)
+                

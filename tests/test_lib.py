@@ -182,7 +182,6 @@ class Test_Constant:
                                          0.001) # tol
         assert isEqual, msg
 
-
 class Test_Gain:
     def setup_class(self):
         # Class setup:
@@ -243,3 +242,72 @@ class Test_Gain:
                                          0.001) # tol
         assert isEqual, msg
 
+class Test_Delay:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        delay1 = mlib.Delay('delay1',float,2.0,None)
+
+        assert delay1.getName()         == 'delay1'
+        assert delay1.getBlockType()    == 'Delay'
+
+        assert delay1.getInportNames()  == ['u']
+        assert delay1.getOutportNames() == ['y']
+    
+    def test_connect(self):
+        delay1 = mlib.Delay('delay1',float,2.0,None)
+        
+        # First connection:
+        # [outSource]--->[Delay]--->[outTest]
+        outSource = mlib.Outport('outSource',float,None)
+        outTest   = mlib.Outport('outTest',float,None)
+        
+
+        outTest.connectTo(delay1.getOutport('y'))
+        delay1.getInport('u').connectTo(outSource)
+
+        # Execute model:
+        outSource.setValue(4.0)
+        delay1.execute()
+
+        assert outTest.getValue() == 2.0
+
+        # Execute one cycle:
+        delay1.update()
+        outSource.setValue(8.0)
+        delay1.execute()
+    
+        assert outTest.getValue() == 4.0
+        
+    def test_run(self):
+        delay1 = mlib.Delay('delay1',# name
+                            float,   # type
+                           2.0,      # aInitValue
+                           None)     # parent
+
+        simIn = dict()
+        simIn['time'] = np.arange(0.0,2.0,0.1,dtype=float)
+        simIn['u']    = np.arange(len(simIn['time']),dtype=float)
+        simOut        = delay1.sim(simIn)
+
+        outExpect     = np.roll(simIn['u'],1)
+        outExpect[0]  = 2.0
+
+        isEqual, msg = mHelp.verifyEqual(simOut['y'],
+                                         outExpect,
+                                         0.001) # tol
+        assert isEqual, msg
