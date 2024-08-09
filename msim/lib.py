@@ -142,16 +142,24 @@ class Block(ABC):
     def getInportValue(self, aName):
         iPort = self.getInport(aName).getValue()            
 
-    def getOutport(self, aName):
-        for iPort in self._outports:
-            if(iPort.getName() == aName):
-                return iPort
-
     def getInport(self, aName):
         for iPort in self._inports:
             if(iPort.getName() == aName):
                 return iPort
 
+    def getInportNames(self):
+        blockInports = [iPort.getName() for iPort in self._inports]
+        return blockInports
+
+    def getOutport(self, aName):
+        for iPort in self._outports:
+            if(iPort.getName() == aName):
+                return iPort
+
+    def getOutportNames(self):
+        blockOutports = [iPort.getName() for iPort in self._outports]
+        return blockOutports
+    
     # -------------------
     # Connectivity:
     #  ------------------- 
@@ -171,7 +179,7 @@ class Block(ABC):
     # Simulate:
     #  -------------------
     def sim(self, simIn):
-        return mhelp.run(simIn)
+        return mhelp.run(self,simIn)
 
     @abstractmethod
     def execute(self):
@@ -183,6 +191,40 @@ class Block(ABC):
         # Implement by each block
         pass
     
+class Constant(Block):
+
+    def __init__(self,aName, aType, aValue, aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Constant'
+        self._parent    = aParent
+
+        # Ensure type is valid:
+        assert mhelp.isMsimNumType(aType)
+        self._type    = aType
+
+        # Inputs/Outports:
+        self._inports   = []
+        self._outports  = [Outport('y',aType,aParent)]
+        self._subBlocks = []
+
+        self._outports[0].setValue(aValue)
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+        # Do nothing
+        pass
+        
+    def update(self):
+        # Do nothing
+        pass
+
 class Gain(Block):
 
     def __init__(self,aName, aType, aGain, aParent):
@@ -200,8 +242,8 @@ class Gain(Block):
         assert mhelp.isMsimNumType(aType)
 
         # Inputs/Outports:
-        self._inports   = [Inport ('in', aType,aParent)]
-        self._outports  = [Outport('out',aType,aParent)]
+        self._inports   = [Inport ('u', aType,aParent)]
+        self._outports  = [Outport('y',aType,aParent)]
         self._subBlocks = []
 
     # -----------------

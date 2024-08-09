@@ -1,6 +1,7 @@
 # [Description]: Helper function to support pysim
-
-import msim.lib as mlib
+from   collections import namedtuple
+import numpy       as np
+import msim.lib    as     mlib
 import mypy
 
 # -------------------------------------------------------------------------
@@ -72,16 +73,75 @@ def run(aBlock, simIn):
     # [Description]: Executes a simulation over a mlib.block
     # [Inputs]:
     #   - aBlock: Block to be simulated
-    #   - simData: Data structure used to exercise the inputs
+    #   - simIn: Dictionary with input data
     # [Outputs]:
-    #   - simData: Data structure with simulation results
+    #   - simOut: Dictionary with input data
 
-    pass
+    # Ensure block/test have same inputs:
+    inportNames  = aBlock.getInportNames()
+    inportsNo    = len(inportNames)
 
+    simInports      = simIn.keys()
+    simInportsNo    = len(simInports) -1
 
+    assert inportsNo == simInportsNo, '[Error] Number of Inports do not match'
+    
+    # Create test inports:
+    simPorts = dict()
+    for portH in aBlock._inports:
+        aName = portH.getName()
+        aType = portH.getType()
 
+        simPorts[aName] = mlib.Outport (aName, # name
+                                        aType, # type
+                                        None)
+        portH.connectTo(simPorts[aName])
 
+    simOut = dict()
+    simOut['time'] = simIn['time']
+    for portH in aBlock._outports:
+        aName = portH.getName()
+        aType = portH.getType()
 
+        simOut[aName] = np.zeros_like(simIn['time'],dtype=aType)
 
+    # Execute iteration
+    for k,iTime in enumerate(simIn['time']):
+        for inName in inportNames:
+            simPorts[inName].setValue(simIn[inName][k])
+
+        aBlock.execute()
+
+        # Assign outports:
+        for outportH in aBlock._outports:
+            outName = outportH.getName()
+            simOut[outName][k] = outportH.getValue()
+
+        aBlock.update()
+
+    return simOut
+
+# -------------
+# Testing
+# -------------
+def verifyEqual(listA: list, listB: list, aTol: float) -> bool:
+    # [Description]: Compare two lists against tolerance. 
+    #                Returns False if not equal
+    # [Output]:
+    #   - isEqual: True if lists match
+    #   - msg:     Error message
+
+    # Ensure lists have same size:
+    aNo = len(listA)
+    bNo = len(listB)
+    assert aNo == bNo, 'ListA/B do not match size'
+
+    for k,(iA,iB) in enumerate(zip(listA,listB)):
+        isEqual = abs(iA - iB) < aTol
+        if(not isEqual):
+            msg = 'Index [' + str(k) + ']: ' + str(iA) + ' is not equal to ' + str(iB) 
+            return isEqual, msg
+        
+    return isEqual, ''
 
 

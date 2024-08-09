@@ -127,3 +127,37 @@ class Test_simData:
 
         resultA = self.simExample.getSignalSample('a',1)    
         assert resultA == 1.0
+
+class Test_assertEqual:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_equal(self):
+        listA = [0.0, 1.0, 2.0]
+        listB = [0.0, 1.0, 2.0]
+
+        isEqual, msg = mHelp.verifyEqual(listA,listB,0.001)
+        assert isEqual, msg
+
+    def test_notEqual(self):
+        # Ensure error is detected
+        listA = [0.0, 1.0, 2.0]
+        listB = [0.0, 1.0, 2.01]
+
+        isEqual, msg = mHelp.verifyEqual(listA,listB,0.001)
+        assert not isEqual
+        assert msg == 'Index [2]: 2.0 is not equal to 2.01'
+        
