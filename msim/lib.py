@@ -143,21 +143,17 @@ class Block(ABC):
         iPort = self.getInport(aName).getValue()            
 
     def getInport(self, aName):
-        for iPort in self._inports:
-            if(iPort.getName() == aName):
-                return iPort
+        return self._inports[aName]
 
     def getInportNames(self):
-        blockInports = [iPort.getName() for iPort in self._inports]
+        blockInports = list(self._inports.keys())
         return blockInports
 
     def getOutport(self, aName):
-        for iPort in self._outports:
-            if(iPort.getName() == aName):
-                return iPort
+        return self._outports[aName]
 
     def getOutportNames(self):
-        blockOutports = [iPort.getName() for iPort in self._outports]
+        blockOutports = list(self._outports.keys())
         return blockOutports
     
     # -------------------
@@ -208,11 +204,11 @@ class Constant(Block):
         self._type    = aType
 
         # Inputs/Outports:
-        self._inports   = []
-        self._outports  = [Outport('y',aType,aParent)]
-        self._subBlocks = []
+        self._inports   = {}
+        self._outports  = {'y':Outport('y',aType,aParent)}
+        self._subBlocks = {}
 
-        self._outports[0].setValue(aValue)
+        self._outports['y'].setValue(aValue)
 
     # -----------------
     # Output and update
@@ -242,17 +238,17 @@ class Gain(Block):
         assert mhelp.isMsimNumType(aType)
 
         # Inputs/Outports:
-        self._inports   = [Inport ('u', aType,aParent)]
-        self._outports  = [Outport('y',aType,aParent)]
-        self._subBlocks = []
+        self._inports   = {'u':Inport ('u', aType,aParent)}
+        self._outports  = {'y':Outport('y',aType,aParent)}
+        self._subBlocks = {}
 
     # -----------------
     # Output and update
     # -----------------
     def execute(self):
         # Process inports:
-        out = self._inports[0].getValue() * self._gain
-        self._outports[0].setValue(out)
+        out = self._inports['u'].getValue() * self._gain
+        self._outports['y'].setValue(out)
         
     def update(self):
         # Do nothing
@@ -274,20 +270,59 @@ class Delay(Block):
         assert mhelp.isMsimNumType(aType)
 
         # Inputs/Outports:
-        self._inports   = [Inport ('u', aType,aParent)]
-        self._outports  = [Outport('y',aType,aParent)]
-        self._subBlocks = []
+        self._inports   = {'u':Inport ('u', aType,aParent)}
+        self._outports  = {'y':Outport('y',aType,aParent)}
+        self._subBlocks = {}
 
-        self._outports[0].setValue(aInitValue)
+        self._outports['y'].setValue(aInitValue)
 
     # -----------------
     # Output and update
     # -----------------
     def execute(self):
         # Process inports:
-        self._internalValue =self._inports[0].getValue()
+        self._internalValue =self._inports['u'].getValue()
         
     def update(self):
         # Do nothing
-        self._outports[0].setValue(self._internalValue)
+        self._outports['y'].setValue(self._internalValue)
                 
+class Switch(Block):
+
+    def __init__(self,aName, aType, aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Switch'
+        self._parent    = aParent
+
+        # Ensure type is valid:
+        assert mhelp.isMsimNumType(aType)
+
+        # Inputs/Outports:
+        uOn  = Inport ('on',  aType,aParent)
+        uOff = Inport ('off', aType,aParent)
+        sw   = Inport ('sw',   bool,aParent)
+        y    = Outport ('y',   aType,aParent)
+
+        self._inports   = {'on':uOn, 'off':uOff, 'sw':sw}
+        self._outports  = {'y' :y}
+        self._subBlocks = {}
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+        # Process inports:
+        if(self._inports['sw'].getValue()):
+            u = self._inports['on'].getValue()
+        else:
+            u = self._inports['off'].getValue()
+        self._outports['y'].setValue(u)
+
+    def update(self):
+        # Do nothing
+        pass

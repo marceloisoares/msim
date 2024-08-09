@@ -311,3 +311,89 @@ class Test_Delay:
                                          outExpect,
                                          0.001) # tol
         assert isEqual, msg
+
+class Test_Switch:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        switch1 = mlib.Switch('switch1',float,None)
+
+        assert switch1.getName()         == 'switch1'
+        assert switch1.getBlockType()    == 'Switch'
+
+        assert switch1.getInportNames()  == ['on', 'off', 'sw']
+        assert switch1.getOutportNames() == ['y']
+    
+    def test_connect(self):
+        switch1 = mlib.Switch('switch1',float,None)
+        
+        # [onSource]--->
+        # [swSource]--->[Switch]--->[outTest]
+        # [offSource]-->
+        swSource  = mlib.Outport('swSource',bool,None)
+        onSource  = mlib.Outport('onSource',float,None)
+        offSource = mlib.Outport('offSource',float,None)
+
+        outTest   = mlib.Outport('outTest',float,None)
+
+        outTest.connectTo(switch1.getOutport('y'))
+        switch1.getInport('on').connectTo(onSource)
+        switch1.getInport('off').connectTo(offSource)
+        switch1.getInport('sw').connectTo(swSource)
+
+        # Execute model:
+        onSource.setValue(2.0)
+        offSource.setValue(-2.0)
+        swSource.setValue(True)
+        switch1.execute()
+        
+        assert outTest.getValue() == 2.0
+
+        # Execute one cycle:
+        switch1.update()
+        swSource.setValue(False)
+        switch1.execute()
+    
+        assert outTest.getValue() == -2.0
+        
+    def test_run(self):
+        switch1 = mlib.Switch('Switch1',# name
+                              float,   # type
+                              None)     # parent
+
+        simIn = dict()
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        uOn  = np.arange(len(time),dtype=float)
+        uOff = uOn -1
+        sw   = np.random.randint(0,2,
+                                 size=time.shape,
+                                 dtype=bool)
+        
+        simIn['time'] = time
+        simIn['on']   = uOn
+        simIn['off']  = uOff
+        simIn['sw']   = sw
+
+        simOut        = switch1.sim(simIn)
+
+        outExpect     = uOff
+        outExpect[sw] = uOn[sw]
+
+        isEqual, msg = mHelp.verifyEqual(simOut['y'],
+                                         outExpect,
+                                         0.001) # tol
+        assert isEqual, msg        

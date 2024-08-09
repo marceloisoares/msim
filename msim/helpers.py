@@ -88,7 +88,7 @@ def run(aBlock, simIn):
     
     # Create test inports:
     simPorts = dict()
-    for portH in aBlock._inports:
+    for portH in aBlock._inports.values():
         aName = portH.getName()
         aType = portH.getType()
 
@@ -99,7 +99,7 @@ def run(aBlock, simIn):
 
     simOut = dict()
     simOut['time'] = simIn['time']
-    for portH in aBlock._outports:
+    for portH in aBlock._outports.values():
         aName = portH.getName()
         aType = portH.getType()
 
@@ -113,7 +113,7 @@ def run(aBlock, simIn):
         aBlock.execute()
 
         # Assign outports:
-        for outportH in aBlock._outports:
+        for outportH in aBlock._outports.values():
             outName = outportH.getName()
             simOut[outName][k] = outportH.getValue()
 
