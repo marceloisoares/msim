@@ -373,3 +373,46 @@ class Sum(Block):
     def update(self):
         # Do nothing
         pass
+
+class Logical(Block):
+
+    def __init__(self,aName,aOperator,aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Logical'
+        self._parent    = aParent
+
+        assert aOperator in ['and','or','xor']
+        if(aOperator == 'and'):
+            self._operatorH = np.logical_and
+        elif(aOperator == 'or'):
+            self._operatorH = np.logical_or
+        else:
+            self._operatorH = np.logical_xor
+
+        # Inputs/Outports:
+        u0 = Inport(bool,aParent)
+        u1 = Inport(bool,aParent)
+        y  = Outport(bool,aParent)
+
+        self._inports   = {'u0':u0, 'u1':u1}
+        self._outports  = {'y' :y}
+        self._subBlocks = {}
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+
+        # Update output:
+        result = self._operatorH(self._inports['u0'].getValue(),
+                                 self._inports['u1'].getValue())
+        self._outports['y'].setValue(result)
+
+    def update(self):
+        # Do nothing
+        pass    

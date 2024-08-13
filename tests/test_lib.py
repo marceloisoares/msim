@@ -481,3 +481,79 @@ class Test_Sum:
                                          outExpect,
                                          0.001) # tol
         assert isEqual, msg        
+
+class Test_Logical:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        or1 = mlib.Logical('or1','or',None)
+
+        assert or1.getName()         == 'or1'
+        assert or1.getBlockType()    == 'Logical'
+
+        assert or1.getInportNames()  == ['u0','u1']
+        assert or1.getOutportNames() == ['y']
+    
+    def test_connect(self):
+        or1 = mlib.Logical('or1','or',None)
+        
+        # [u0Source]--->
+        # [u1Source]--->[Logical]--->[outTest]
+
+        # First connection:
+        outTest  = mlib.Outport(bool,None)
+        u0Source = mlib.Outport(bool,None)
+        u1Source = mlib.Outport(bool,None)
+
+        outTest.connectTo(or1.getOutport('y'))
+        or1.getInport('u0').connectTo(u0Source)
+        or1.getInport('u1').connectTo(u1Source)
+
+        # Execute model:
+        u0Source.setValue(True)
+        u1Source.setValue(False)
+        or1.execute()
+
+        assert outTest.getValue() == True
+
+        # Execute model:
+        or1.update()
+        u0Source.setValue(False)
+        u1Source.setValue(False)
+        or1.execute()
+
+        assert outTest.getValue() == False
+
+    def test_run(self):
+        and1 = mlib.Logical('and1','and',None)
+
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        u0  = np.random.randint(0,2,
+                                 size=time.shape,
+                                 dtype=bool)
+        u1  = np.random.randint(0,2,
+                                 size=time.shape,
+                                 dtype=bool)
+        simIn = dict()
+        simIn['time'] = time
+        simIn['u0']   = u0
+        simIn['u1']   = u1
+
+        simOut        = and1.sim(simIn)
+        outExpect     = np.logical_and(u0,u1)
+        
+        assert all(simOut['y'] == outExpect)
