@@ -677,3 +677,86 @@ class Test_Relational:
         outExpect     = np.less(u0,u1)
         
         assert all(simOut['y'] == outExpect)                
+
+class Test_Integrator:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        int1 = mlib.Integrator('Integrator1',1.0,None)
+
+        assert int1.getName()         == 'Integrator1'
+        assert int1.getBlockType()    == 'Integrator'
+
+        assert int1.getInportNames()  == ['uDot','r','IC']
+        assert int1.getOutportNames() == ['y']
+    
+    def test_connect(self):
+        int1 = mlib.Integrator('Integrator1',1.0,None)
+        
+        # First connection:
+        # [uDotSource]
+        # [rSource]
+        # [ICSource]--->[Integrator]--->[outTest]
+
+        outTest    = mlib.Outport(float,None)
+        uDotSource = mlib.Outport(float,None)
+        rSource    = mlib.Outport(bool,None)
+        ICSource   = mlib.Outport(float,None)
+
+        outTest.connectTo(int1.getOutport('y'))
+        int1.getInport('uDot').connectTo(uDotSource)
+        int1.getInport('r').connectTo(rSource)
+        int1.getInport('IC').connectTo(ICSource)
+
+        # Execute model:
+        uDotSource.setValue(0.5)
+        rSource.setValue(False)
+        ICSource.setValue(-10.0)
+
+        int1.execute()
+        assert outTest.getValue() == 0.0
+
+        int1.update()
+        int1.execute()
+        assert outTest.getValue() == 0.5
+
+        rSource.setValue(True)
+        int1.update()
+        int1.execute()
+        assert outTest.getValue() == -10.0
+
+    def test_run(self):
+        int1 = mlib.Integrator('Integrator1',1.0,None)
+
+        time = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0])
+        uDot = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,  0.5,  0.25, 0.25, 0.25, 0.25, 0.25])
+        r    = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],dtype=bool)
+        IC   = np.array([5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0])
+        yExp = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 5.0, 5.5, 6.0, 6.5, 7.0,  7.5,  8.0,  8.25, 8.50, 8.75, 9.0])
+
+        simIn = dict()
+        simIn['time'] = time
+        simIn['uDot'] = uDot
+        simIn['r']    = r
+        simIn['IC']   = IC
+
+        simOut        = int1.sim(simIn)
+
+        isEqual, msg = mHelp.verifyEqual(simOut['y'],
+                                         yExp,
+                                         0.001) # tol
+        assert isEqual, msg        

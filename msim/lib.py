@@ -461,3 +461,38 @@ class Relational(Block):
     def update(self):
         # Do nothing
         pass    
+
+class Integrator(Block):
+
+    def __init__(self,aName, aTs, aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Integrator'
+        self._ts        = aTs
+        self._parent    = aParent
+
+        # Inputs/Outports:
+        self._inports   = {'uDot':Inport (float,aParent),
+                           'r'   :Inport (bool,aParent),
+                           'IC'  :Inport (float,aParent)}
+        self._outports  = {'y'   :Outport(float,aParent)}
+        self._outports['y'].setValue(0.0)
+        self._subBlocks = {}
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+        if(self._inports['r'].getValue()):
+            IC = self._inports['IC'].getValue()
+            self._outports['y'].setValue(IC)
+        
+    def update(self):
+        cValue = self._outports['y'].getValue() + \
+                 self._ts * self._inports['uDot'].getValue()
+        self._outports['y'].setValue(cValue)
+            
