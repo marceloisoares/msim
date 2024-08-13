@@ -416,3 +416,48 @@ class Logical(Block):
     def update(self):
         # Do nothing
         pass    
+
+class Relational(Block):
+
+    def __init__(self,aName,aType,aOperator,aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Relational'
+        self._parent    = aParent
+
+        assert aOperator in ['>','>=','<','<=']
+        if(aOperator == '>'):
+            self._operatorH = np.greater
+        elif(aOperator == '>='):
+            self._operatorH = np.greater_equal
+        elif(aOperator == '<'):
+            self._operatorH = np.less            
+        else:
+            self._operatorH = np.less_equal
+
+        # Inputs/Outports:
+        u0 = Inport(aType,aParent)
+        u1 = Inport(aType,aParent)
+        y  = Outport(bool,aParent)
+
+        self._inports   = {'u0':u0, 'u1':u1}
+        self._outports  = {'y' :y}
+        self._subBlocks = {}
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+
+        # Update output:
+        result = self._operatorH(self._inports['u0'].getValue(),
+                                 self._inports['u1'].getValue())
+        self._outports['y'].setValue(result)
+
+    def update(self):
+        # Do nothing
+        pass    

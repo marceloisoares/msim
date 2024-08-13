@@ -557,3 +557,123 @@ class Test_Logical:
         outExpect     = np.logical_and(u0,u1)
         
         assert all(simOut['y'] == outExpect)
+
+class Test_Relational:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        gt1 = mlib.Relational('Relational1',float,'>',None)
+
+        assert gt1.getName()         == 'Relational1'
+        assert gt1.getBlockType()    == 'Relational'
+
+        assert gt1.getInportNames()  == ['u0','u1']
+        assert gt1.getOutportNames() == ['y']
+    
+    def test_connect(self):
+        gt1 = mlib.Relational('Relational1',float,'>',None)
+        
+        # [u0Source]--->
+        # [u1Source]--->[Relational]--->[outTest]
+
+        # First connection:
+        outTest  = mlib.Outport(bool,None)
+        u0Source = mlib.Outport(float,None)
+        u1Source = mlib.Outport(float,None)
+
+        outTest.connectTo(gt1.getOutport('y'))
+        gt1.getInport('u0').connectTo(u0Source)
+        gt1.getInport('u1').connectTo(u1Source)
+
+        # Execute model:
+        u0Source.setValue(2.0)
+        u1Source.setValue(1.0)
+        gt1.execute()
+
+        assert outTest.getValue() == True
+
+        # Execute model:
+        gt1.update()
+        u0Source.setValue(0.5)
+        u1Source.setValue(1.5)
+        gt1.execute()
+
+        assert outTest.getValue() == False
+
+    def test_run_gt(self):
+        gt1 = mlib.Relational('Relational1',float,'>',None)
+
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        u0  = np.random.rand(*time.shape)
+        u1  = np.random.rand(*time.shape)
+        simIn = dict()
+        simIn['time'] = time
+        simIn['u0']   = u0
+        simIn['u1']   = u1
+
+        simOut        = gt1.sim(simIn)
+        outExpect     = np.greater(u0,u1)
+        
+        assert all(simOut['y'] == outExpect)    
+
+    def test_run_gte(self):
+        gte1 = mlib.Relational('Relational1',float,'>=',None)
+
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        u0  = np.random.rand(*time.shape)
+        u1  = np.random.rand(*time.shape)
+        simIn = dict()
+        simIn['time'] = time
+        simIn['u0']   = u0
+        simIn['u1']   = u1
+
+        simOut        = gte1.sim(simIn)
+        outExpect     = np.greater_equal(u0,u1)
+        
+        assert all(simOut['y'] == outExpect)
+
+    def test_run_lt(self):
+        lt1 = mlib.Relational('Relational1',float,'<',None)
+
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        u0  = np.random.rand(*time.shape)
+        u1  = np.random.rand(*time.shape)
+        simIn = dict()
+        simIn['time'] = time
+        simIn['u0']   = u0
+        simIn['u1']   = u1
+
+        simOut        = lt1.sim(simIn)
+        outExpect     = np.less(u0,u1)
+        
+        assert all(simOut['y'] == outExpect)    
+
+    def test_run_lt(self):
+        lte1 = mlib.Relational('Relational1',float,'<=',None)
+
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        u0  = np.random.rand(*time.shape)
+        u1  = np.random.rand(*time.shape)
+        simIn = dict()
+        simIn['time'] = time
+        simIn['u0']   = u0
+        simIn['u1']   = u1
+
+        simOut        = lte1.sim(simIn)
+        outExpect     = np.less(u0,u1)
+        
+        assert all(simOut['y'] == outExpect)                
