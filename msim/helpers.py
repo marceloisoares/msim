@@ -17,7 +17,7 @@ def isMsimNumType(aType: any) -> bool:
 # Blocks
 # -------------
 
-def dispPortStatus(aPortList: list):
+def dispPortStatus(aPortList: dict):
     # [Description]: Display the port status of all ports. Typically used for
     #                debugging purposes
     maxChar = 24
@@ -34,15 +34,14 @@ def dispPortStatus(aPortList: list):
     print(barStr)
     
     # Print status of each port:
-    for iPort in aPortList:
-        cName  = iPort.getName()
-        cType  = str(iPort.getType())
-        cValue = str(iPort.getValue())
+    for aName,aPortH in aPortList.items():
+        aType  = str(aPortH.getType())
+        aValue = str(aPortH.getValue())
 
         listStr = '|' + \
-                  str.center(cName,maxChar)  + '|' + \
-                  str.center(cType,maxChar)  + '|' + \
-                  str.center(cValue,maxChar) + '|' 
+                  str.center(aName,maxChar)  + '|' + \
+                  str.center(aType,maxChar)  + '|' + \
+                  str.center(aValue,maxChar) + '|' 
         
         print(listStr)
 
@@ -88,19 +87,16 @@ def run(aBlock, simIn):
     
     # Create test inports:
     simPorts = dict()
-    for portH in aBlock._inports.values():
-        aName = portH.getName()
+    for aName,portH in aBlock._inports.items():
         aType = portH.getType()
 
-        simPorts[aName] = mlib.Outport (aName, # name
-                                        aType, # type
+        simPorts[aName] = mlib.Outport (aType, # type
                                         None)
         portH.connectTo(simPorts[aName])
 
     simOut = dict()
     simOut['time'] = simIn['time']
-    for portH in aBlock._outports.values():
-        aName = portH.getName()
+    for aName,portH in aBlock._outports.items():
         aType = portH.getType()
 
         simOut[aName] = np.zeros_like(simIn['time'],dtype=aType)
@@ -113,9 +109,8 @@ def run(aBlock, simIn):
         aBlock.execute()
 
         # Assign outports:
-        for outportH in aBlock._outports.values():
-            outName = outportH.getName()
-            simOut[outName][k] = outportH.getValue()
+        for aName,portH in aBlock._outports.items():
+            simOut[aName][k] = portH.getValue()
 
         aBlock.update()
 

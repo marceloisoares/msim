@@ -24,16 +24,15 @@ class Test_Outport:
         pass
 
     def test_basic(self):
-        out1 = mlib.Outport('out1',float,[])
+        out1 = mlib.Outport(float,[])
 
-        assert out1.getName() == 'out1'
         assert out1.getType() is float
 
     def test_connect(self):
         # First connection:
-        outTier1 = mlib.Outport('outTier1',float,[])
-        outTier2 = mlib.Outport('outTier2',float,[])
-        outTier3 = mlib.Outport('outTier3',float,[])
+        outTier1 = mlib.Outport(float,[])
+        outTier2 = mlib.Outport(float,[])
+        outTier3 = mlib.Outport(float,[])
         
         outTier3.connectTo(outTier2)
         assert outTier3.getSource() == outTier2
@@ -45,9 +44,9 @@ class Test_Outport:
 
     def test_dataflow(self):
         # Create and connect sources:
-        outTier1 = mlib.Outport('outTier1',float,[])
-        outTier2 = mlib.Outport('outTier2',float,[])
-        outTier3 = mlib.Outport('outTier3',float,[])
+        outTier1 = mlib.Outport(float,[])
+        outTier2 = mlib.Outport(float,[])
+        outTier3 = mlib.Outport(float,[])
 
         outTier3.connectTo(outTier2)
         outTier2.connectTo(outTier1)
@@ -76,17 +75,16 @@ class Test_Inport:
         pass
 
     def test_basic(self):
-        in1 = mlib.Inport('in1',float,[])
+        in1 = mlib.Inport(float,[])
 
-        assert in1.getName() == 'in1'
         assert in1.getType() is float
 
     def test_connect(self):
         # First connection:
-        outSource = mlib.Outport('outSource',float,[])
-        inTier1   = mlib.Inport('inTier1',float,[])
-        inTier2   = mlib.Inport('inTier2',float,[])
-        inTier3   = mlib.Inport('inTier3',float,[])
+        outSource = mlib.Outport(float,[])
+        inTier1   = mlib.Inport(float,[])
+        inTier2   = mlib.Inport(float,[])
+        inTier3   = mlib.Inport(float,[])
         
         inTier3.connectTo(inTier2)
         assert inTier3.getSource() == inTier2
@@ -102,10 +100,10 @@ class Test_Inport:
 
     def test_dataflow(self):
         # Create and connect sources:
-        outSource = mlib.Outport('outSource',float,[])
-        inTier1   = mlib.Inport('inTier1',float,[])
-        inTier2   = mlib.Inport('inTier2',float,[])
-        inTier3   = mlib.Inport('inTier3',float,[])
+        outSource = mlib.Outport(float,[])
+        inTier1   = mlib.Inport(float,[])
+        inTier2   = mlib.Inport(float,[])
+        inTier3   = mlib.Inport(float,[])
 
         # Make connections:
         inTier3.connectTo(inTier2)
@@ -154,8 +152,8 @@ class Test_Constant:
         const1 = mlib.Constant('const1',float,2.0,None)
         
         # First connection:
-        outTest   = mlib.Outport('outTest',float,None)
-        outSource = mlib.Outport('outSource',float,None)
+        outTest   = mlib.Outport(float,None)
+        outSource = mlib.Outport(float,None)
 
         outTest.connectTo(const1.getOutport('y'))
 
@@ -212,8 +210,8 @@ class Test_Gain:
         gain1 = mlib.Gain('gain1',float,2.0,None)
         
         # First connection:
-        outTest   = mlib.Outport('outTest',float,None)
-        outSource = mlib.Outport('outSource',float,None)
+        outTest   = mlib.Outport(float,None)
+        outSource = mlib.Outport(float,None)
 
         outTest.connectTo(gain1.getOutport('y'))
         gain1.getInport('u').connectTo(outSource)
@@ -273,8 +271,8 @@ class Test_Delay:
         
         # First connection:
         # [outSource]--->[Delay]--->[outTest]
-        outSource = mlib.Outport('outSource',float,None)
-        outTest   = mlib.Outport('outTest',float,None)
+        outSource = mlib.Outport(float,None)
+        outTest   = mlib.Outport(float,None)
         
 
         outTest.connectTo(delay1.getOutport('y'))
@@ -344,11 +342,11 @@ class Test_Switch:
         # [onSource]--->
         # [swSource]--->[Switch]--->[outTest]
         # [offSource]-->
-        swSource  = mlib.Outport('swSource',bool,None)
-        onSource  = mlib.Outport('onSource',float,None)
-        offSource = mlib.Outport('offSource',float,None)
+        swSource  = mlib.Outport(bool,None)
+        onSource  = mlib.Outport(float,None)
+        offSource = mlib.Outport(float,None)
 
-        outTest   = mlib.Outport('outTest',float,None)
+        outTest   = mlib.Outport(float,None)
 
         outTest.connectTo(switch1.getOutport('y'))
         switch1.getInport('on').connectTo(onSource)
@@ -392,6 +390,92 @@ class Test_Switch:
 
         outExpect     = uOff
         outExpect[sw] = uOn[sw]
+
+        isEqual, msg = mHelp.verifyEqual(simOut['y'],
+                                         outExpect,
+                                         0.001) # tol
+        assert isEqual, msg        
+
+class Test_Sum:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        sum1 = mlib.Sum('sum1',float,'+-+',None)
+
+        assert sum1.getName()         == 'sum1'
+        assert sum1.getBlockType()    == 'Sum'
+
+        assert sum1.getInportNames()  == ['u0', 'u1', 'u2']
+        assert sum1.getOutportNames() == ['y']
+    
+    def test_connect(self):
+        sum1 = mlib.Sum('sum1',float,'+-+',None)
+        
+        # [u0Source]--->
+        # [u1Source]--->[Sum]--->[outTest]
+        # [u2Source]--->
+        u0Source = mlib.Outport(float,None)
+        u1Source = mlib.Outport(float,None)
+        u2Source = mlib.Outport(float,None)
+
+        outTest   = mlib.Outport(float,None)
+
+        outTest.connectTo(sum1.getOutport('y'))
+        sum1.getInport('u0').connectTo(u0Source)
+        sum1.getInport('u1').connectTo(u1Source)
+        sum1.getInport('u2').connectTo(u2Source)
+
+        # Execute model:
+        u0Source.setValue(1.0)
+        u1Source.setValue(2.0)
+        u2Source.setValue(3.0)
+        sum1.execute()
+        
+        assert outTest.getValue() == 2.0
+
+        # Execute one cycle:
+        sum1.update()
+        u2Source.setValue(4.0)
+        sum1.execute()
+    
+        assert outTest.getValue() == 3.0
+    
+    def test_run(self):
+        sum1 = mlib.Sum('sum1',float,'+-+',None)
+
+        simIn = dict()
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        u0  = np.random.randint(-100,100,
+                                size=time.shape,
+                                dtype=int)
+        u1  = np.random.randint(-100,100,
+                                size=time.shape,
+                                dtype=int)
+        u2  = np.random.randint(-100,100,
+                                size=time.shape,
+                                dtype=int)
+        simIn['time'] = time
+        simIn['u0']   = u0
+        simIn['u1']   = u1
+        simIn['u2']   = u2
+
+        simOut        = sum1.sim(simIn)
+        #Check results:
+        outExpect     = u0 - u1 + u2
 
         isEqual, msg = mHelp.verifyEqual(simOut['y'],
                                          outExpect,

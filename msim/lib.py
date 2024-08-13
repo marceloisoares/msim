@@ -6,7 +6,8 @@
 # -------------------------------------------------------------------------
 
 # Abstract base class
-from abc import ABC, abstractmethod
+from   abc   import ABC, abstractmethod
+import numpy as     np
 
 from msim import helpers as mhelp
 # -------------------------------------------------------------------------
@@ -15,9 +16,8 @@ from msim import helpers as mhelp
 
 class Port(ABC):
 
-    def __init__(self,aName: str,aType: any, aParent) -> None:
+    def __init__(self,aType: any, aParent) -> None:
         # Basic properties:
-        self._name   = aName
         self._parent = aParent
 
         # Ensure data type is valid:
@@ -38,9 +38,6 @@ class Port(ABC):
     @abstractmethod
     def getValue(self):
         pass
-
-    def getName(self):
-        return self._name
     
     def getType(self):
         return self._type
@@ -76,10 +73,10 @@ class Port(ABC):
 
 class Outport(Port):
 
-    def __init__(self,aName: str,aType: str, aParent) -> None:
+    def __init__(self,aType: str, aParent) -> None:
 
         # Use constructor only:
-        Port.__init__(self,aName,aType,aParent)
+        Port.__init__(self,aType,aParent)
 
     def setValue(self,aValue):
         # Ensure the port is not connected
@@ -99,16 +96,15 @@ class Outport(Port):
 
 class Inport(Port):
 
-    def __init__(self,aName: str,aType: str, aParent) -> None:
+    def __init__(self,aType: str, aParent) -> None:
 
         # Use constructor only:
-        Port.__init__(self,aName,aType,aParent)
+        Port.__init__(self,aType,aParent)
 
     def getValue(self):
         # Return local value if not connected:
         assert self._sourcePort is not None
         return self._sourcePort.getValue()
-
 
 # -------------------------------------------------------------------------
 # Blocks:
@@ -205,7 +201,7 @@ class Constant(Block):
 
         # Inputs/Outports:
         self._inports   = {}
-        self._outports  = {'y':Outport('y',aType,aParent)}
+        self._outports  = {'y':Outport(aType,aParent)}
         self._subBlocks = {}
 
         self._outports['y'].setValue(aValue)
@@ -238,8 +234,8 @@ class Gain(Block):
         assert mhelp.isMsimNumType(aType)
 
         # Inputs/Outports:
-        self._inports   = {'u':Inport ('u', aType,aParent)}
-        self._outports  = {'y':Outport('y',aType,aParent)}
+        self._inports   = {'u':Inport (aType,aParent)}
+        self._outports  = {'y':Outport(aType,aParent)}
         self._subBlocks = {}
 
     # -----------------
@@ -270,8 +266,8 @@ class Delay(Block):
         assert mhelp.isMsimNumType(aType)
 
         # Inputs/Outports:
-        self._inports   = {'u':Inport ('u', aType,aParent)}
-        self._outports  = {'y':Outport('y',aType,aParent)}
+        self._inports   = {'u':Inport (aType,aParent)}
+        self._outports  = {'y':Outport(aType,aParent)}
         self._subBlocks = {}
 
         self._outports['y'].setValue(aInitValue)
@@ -303,10 +299,10 @@ class Switch(Block):
         assert mhelp.isMsimNumType(aType)
 
         # Inputs/Outports:
-        uOn  = Inport ('on',  aType,aParent)
-        uOff = Inport ('off', aType,aParent)
-        sw   = Inport ('sw',   bool,aParent)
-        y    = Outport ('y',   aType,aParent)
+        uOn  = Inport (aType,aParent)
+        uOff = Inport (aType,aParent)
+        sw   = Inport (bool,aParent)
+        y    = Outport (aType,aParent)
 
         self._inports   = {'on':uOn, 'off':uOff, 'sw':sw}
         self._outports  = {'y' :y}
@@ -322,6 +318,57 @@ class Switch(Block):
         else:
             u = self._inports['off'].getValue()
         self._outports['y'].setValue(u)
+
+    def update(self):
+        # Do nothing
+        pass
+
+
+class Sum(Block):
+
+    def __init__(self,aName, aType,aOperators,aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Sum'
+        self._parent    = aParent
+
+        # Ensure type is valid:
+        assert mhelp.isMsimNumType(aType)
+
+        # Create inport for each operator:
+        self._inports    = dict()
+        self._operatorsH = [np.add] * len(aOperators)
+        for i,operator in enumerate(aOperators):
+            assert operator in ['+','-']
+            if(operator == '+'):
+                self._operatorsH[i] = np.add
+            else:
+                self._operatorsH[i] = np.subtract
+
+            inportName = 'u' + str(i)
+            inPort = Inport (aType,aParent)
+            self._inports.update({inportName:inPort})
+            
+        y    = Outport (aType,aParent)
+        self._outports  = {'y' :y}
+        self._subBlocks = {}
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+
+        # Update output:
+        result = 0
+        for i,aPort in enumerate(self._inports.values()):
+            operator = self._operatorsH[i]
+            result = operator(result,aPort.getValue())
+        
+        self._outports['y'].setValue(result)
 
     def update(self):
         # Do nothing

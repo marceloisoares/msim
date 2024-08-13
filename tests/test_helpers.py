@@ -37,15 +37,15 @@ class Test_isMsimNumType:
 class Test_dispPortStatus:
     def setup_class(self):
         # Class setup:
-        out1 = mlib.Outport('out1',float,[])
-        out2 = mlib.Outport('out2',float,[])
-        out3 = mlib.Outport('out3',float,[])
-        self._outports = [out1,out2,out3]
+        out1 = mlib.Outport(float,[])
+        out2 = mlib.Outport(float,[])
+        out3 = mlib.Outport(float,[])
+        self._outports = {'out1':out1,'out2':out2,'out3':out3}
 
-        in1 = mlib.Inport('in1',float,[])
-        in2 = mlib.Inport('in2',float,[])
-        in3 = mlib.Inport('in3',float,[])
-        self._inports = [in1,in2,in3]
+        in1 = mlib.Inport(float,[])
+        in2 = mlib.Inport(float,[])
+        in3 = mlib.Inport(float,[])
+        self._inports = {'in1':in1,'in2':in2,'in3':in3}
 
         # Connect inports to outport:
         in1.connectTo(out1)
@@ -83,8 +83,7 @@ class Test_simData:
         data = {'time': [0.0, 0.1, 0.2, 0.3,  0.4,  0.5],
                 'a'   : [0.0, 1.0, 2.0, 3.0,  4.0,  5.0],
                 'b'   : [6.0, 7.0, 8.0, 9.0, 10.0, 11.0]}
-
-
+        
         self.simExample = mHelp.simData(**data)
 
     def teardown_class(self):
