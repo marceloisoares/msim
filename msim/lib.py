@@ -495,4 +495,56 @@ class Integrator(Block):
         cValue = self._outports['y'].getValue() + \
                  self._ts * self._inports['uDot'].getValue()
         self._outports['y'].setValue(cValue)
-            
+
+class Product(Block):
+
+    def __init__(self,aName, aType,aOperators,aParent):
+
+        # Create empty properties
+        Block.__init__(self)
+
+        # Basic properties:
+        self._name      = aName
+        self._blockType = 'Product'
+        self._parent    = aParent
+        self._type    = aType
+
+        # Ensure type is valid:
+        assert mhelp.isMsimNumType(aType)
+
+        # Create inport for each operator:
+        self._inports    = dict()
+        self._operatorsH = [np.prod] * len(aOperators)
+        for i,operator in enumerate(aOperators):
+            assert operator in ['*','/']
+            if(operator == '*'):
+                self._operatorsH[i] = np.prod
+            else:
+                self._operatorsH[i] = np.divide
+
+            inportName = 'u' + str(i)
+            inPort = Inport (aType,aParent)
+            self._inports.update({inportName:inPort})
+
+        y    = Outport (aType,aParent)
+        self._outports  = {'y' :y}
+        self._subBlocks = {}
+
+    # -----------------
+    # Output and update
+    # -----------------
+    def execute(self):
+
+        # Update output:
+        result = 1.0
+        for i,aPort in enumerate(self._inports.values()):
+            operator = self._operatorsH[i]
+            if operator is np.prod:
+                result = operator([result,aPort.getValue()],dtype=self._type)
+            else:
+                result = operator(result,aPort.getValue(),dtype=self._type)
+        self._outports['y'].setValue(result)
+
+    def update(self):
+        # Do nothing
+        pass

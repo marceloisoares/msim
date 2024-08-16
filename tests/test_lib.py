@@ -759,4 +759,85 @@ class Test_Integrator:
         isEqual, msg = mHelp.verifyEqual(simOut['y'],
                                          yExp,
                                          0.001) # tol
-        assert isEqual, msg        
+        assert isEqual, msg
+
+class Test_Product:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+        prod1 = mlib.Product('Product1',float,'*/*',None)
+
+        assert prod1.getName()         == 'Product1'
+        assert prod1.getBlockType()    == 'Product'
+
+        assert prod1.getInportNames()  == ['u0', 'u1', 'u2']
+        assert prod1.getOutportNames() == ['y']
+
+    def test_connect(self):
+        prod1 = mlib.Product('Product1',float,'*/*',None)
+
+        # [u0Source]--->
+        # [u1Source]--->[Product]--->[outTest]
+        # [u2Source]--->
+        u0Source = mlib.Outport(float,None)
+        u1Source = mlib.Outport(float,None)
+        u2Source = mlib.Outport(float,None)
+
+        outTest   = mlib.Outport(float,None)
+
+        outTest.connectTo(prod1.getOutport('y'))
+        prod1.getInport('u0').connectTo(u0Source)
+        prod1.getInport('u1').connectTo(u1Source)
+        prod1.getInport('u2').connectTo(u2Source)
+
+        # Execute model:
+        u0Source.setValue(1.0)
+        u1Source.setValue(2.0)
+        u2Source.setValue(3.0)
+        prod1.execute()
+
+        assert outTest.getValue() == 1.5
+
+        # Execute one cycle:
+        prod1.update()
+        u2Source.setValue(4.0)
+        prod1.execute()
+
+        assert outTest.getValue() == 2.0
+
+    def test_run(self):
+        prod1 = mlib.Product('Product1',float,'*/*',None)
+
+        simIn = dict()
+        time = np.arange(0.0,2.0,0.1,dtype=float)
+        u0  = np.random.rand(*time.shape)
+        u1  = np.random.rand(*time.shape)
+        u2  = np.random.rand(*time.shape)
+
+        simIn['time'] = time
+        simIn['u0']   = u0
+        simIn['u1']   = u1
+        simIn['u2']   = u2
+
+        simOut        = prod1.sim(simIn)
+        #Check results:
+        outExpect     = u0 / u1 * u2
+
+        isEqual, msg = mHelp.verifyEqual(simOut['y'],
+                                         outExpect,
+                                         0.001) # tol
+        assert isEqual, msg
