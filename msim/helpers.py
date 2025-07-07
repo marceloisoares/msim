@@ -126,6 +126,11 @@ def verifyEqual(listA: list, listB: list, aTol: float) -> bool:
     #   - isEqual: True if lists match
     #   - msg:     Error message
 
+    # Ensure it works with scalar as well:
+    if not isinstance(listA, (list, tuple)):
+        listA = [listA]
+        listB = [listB]
+
     # Ensure lists have same size:
     aNo = len(listA)
     bNo = len(listB)

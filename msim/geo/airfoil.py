@@ -32,9 +32,9 @@ class Naca4():
         #   - Naca4(2,4,12): Corresponds to NACA 2412
 
         # Basic properties:
-        self._M = M
-        self._P = P
-        self._XX = XX
+        self._M = M * 0.01
+        self._P = P * 0.1
+        self._XX = XX * 0.01
 
     def _getCamber(self,x: float) -> float:
         # Description:
@@ -69,8 +69,9 @@ class Naca4():
     def _getThickness(self,x: float) -> float:
         # Description:
         #   - Get chamber position at position x
-        P = self._P
-        M = self._M
+        P  = self._P
+        M  = self._M
+        XX = self._XX
 
         a0 =  0.2969
         a1 = -0.1260
@@ -78,11 +79,11 @@ class Naca4():
         a3 =  0.2843
         a4 = -0.1015
 
-        yt = (a0 * np.sqrt(x) +
-              a1 * x         +
-              a2 * x**2      +
-              a3 * x**3      +
-              a4 * x**4 ) 
+        yt =(XX/0.2)*(a0 * np.sqrt(x) +
+                      a1 * x         +
+                      a2 * x**2      +
+                      a3 * x**3      +
+                      a4 * x**4 ) 
         
         return yt
 
@@ -94,7 +95,7 @@ class Naca4():
         theta_rad = np.atan(self._getGradient(x))
 
         # Chamber position:
-        yc = self._getChamber(x)
+        yc = self._getCamber(x)
 
         # Thickness:
         yt = self._getThickness(x)
@@ -109,7 +110,7 @@ class Naca4():
 
         return (xu, yu, xl, yl)
 
-def getSurf(self,nPoints: int) -> tuple:
+    def getSurf(self,nPoints: int) -> tuple:
         # Description:
         #   - Get the upper/lower surface 
         # Inputs:
@@ -130,7 +131,7 @@ def getSurf(self,nPoints: int) -> tuple:
 
         for i,ix in enumerate(x):
             xu[i], yu[i], xl[i], yl[i] = self._getUpperLowerPos(ix)
-            yc[i] = self._getChamber(ix)
+            yc[i] = self._getCamber(ix)
 
         return (x,xu,yu,xl,yl,yc)
 
