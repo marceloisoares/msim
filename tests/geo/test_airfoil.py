@@ -32,7 +32,7 @@ class Test_Naca4:
         # Basic data
         assert naca4._M == 0.02
         assert naca4._P == 0.4
-        assert naca4._XX == 12
+        assert naca4._XX == 0.12
 
     def test_maxchamber(self):
 
