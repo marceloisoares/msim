@@ -1,0 +1,15 @@
+
+
+Actions:
+	fazer vert
+	fazer edge
+	fazer face
+	fazer airfoil mesh 
+		- list vertices
+		- list edges
+		- transformation matrix
+		- get vertices
+		- get edges
+		
+		<parei aqui - continuar na lista de vertx >
+		

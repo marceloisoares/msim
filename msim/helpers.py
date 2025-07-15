@@ -2,7 +2,7 @@
 from   collections import namedtuple
 import numpy       as np
 import msim.lib    as     mlib
-import mypy
+# import mypy
 
 # -------------------------------------------------------------------------
 # Supporting functions
@@ -127,7 +127,7 @@ def verifyEqual(listA: list, listB: list, aTol: float) -> bool:
     #   - msg:     Error message
 
     # Ensure it works with scalar as well:
-    if not isinstance(listA, (list, tuple)):
+    if not isinstance(listA, (list, tuple, np.ndarray)):
         listA = [listA]
         listB = [listB]
 

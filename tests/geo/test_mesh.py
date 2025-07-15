@@ -1,9 +1,9 @@
-import matplotlib.pylab as plt
-import numpy            as np
+import matplotlib.pyplot as plt
+import numpy             as np
 import pytest
-import msim.lib         as mlib
-import msim.helpers     as mHelp
-import msim.geo.mesh    as mMesh
+import msim.lib          as mlib
+import msim.helpers      as mHelp
+import msim.geo.mesh     as mMesh
 
 # -------------------------------------------------------------------------
 # Basic mesh shapes
@@ -28,7 +28,7 @@ class Test_Vert:
 
     def test_basic(self):
 
-        mVert = mMesh.vert(-1.1,2.2,0.5)
+        mVert = mMesh.Vert(-1.1,2.2,0.5)
         vertPos = mVert.getPos()
 
         # X
@@ -52,6 +52,130 @@ class Test_Vert:
                                          0.0001) # tol
         assert isequal, msg
 
+    def test_disp(self):
+
+        mVert = mMesh.Vert(-1.1,2.2,0.5)
+        vertPos = mVert.disp()
+
+        assert True
+
+    def test_vector(self):
+
+        mVert = mMesh.Vert(-1.1,2.2,0.5)
+        vertPos = mVert.asVector()
+
+        # X
+        isequal, msg = mHelp.verifyEqual(vertPos,
+                                         np.array([-1.1,2.2,0.5]),
+                                         0.0001) # tol
+        assert isequal, msg
+
+    def test_translation(self):
+
+        mVert = mMesh.Vert(-1.1,2.2,0.5)
+        tVert = np.array([1.0,2.0,3.0])
+        mVert.translate(tVert)
+
+        # X
+        isequal, msg = mHelp.verifyEqual(mVert.asVector(),
+                                         np.array([-1.1,2.2,0.5]) + tVert,
+                                         0.0001) # tol
+        assert isequal, msg        
+
+    def test_scale(self):
+
+        mVert = mMesh.Vert(1.0,2.0,3.0)
+        s     = 2
+        mVert.scale(2)
+
+        # X
+        isequal, msg = mHelp.verifyEqual(mVert.asVector(),
+                                         np.array([1.0,2.0,3.0]) * 2,
+                                         0.0001) # tol
+        assert isequal, msg        
+
+    def test_rotationX(self):
+
+        # Sample vector:
+        mVert = mMesh.Vert(1.0,2.0,3.0)
+        mVert.rotate(x_deg = 30)
+            
+        # Prepare rotation
+        x_deg = 30
+        x_rad = np.deg2rad(x_deg)
+
+        cx    = np.cos(x_rad)
+        sx    = np.sin(x_rad)
+
+        r     = np.array([[ 1.0, 0.0, 0.0],
+                          [ 0.0,  cx, -sx],
+                          [ 0.0,  sx,  cx]])
+        
+        expVert = r @ np.array([1.0,2.0,3.0])
+
+        # X
+        isequal, msg = mHelp.verifyEqual(mVert.asVector(),
+                                         expVert,
+                                         0.0001) # tol
+        assert isequal, msg
+
+    def test_rotationY(self):
+
+        # Sample vector:
+        mVert = mMesh.Vert(1.0,2.0,3.0)
+        mVert.rotate(y_deg = 30)
+            
+        # Prepare rotation
+        y_deg = 30
+        y_rad = np.deg2rad(y_deg)
+
+        cy    = np.cos(y_rad)
+        sy    = np.sin(y_rad)
+
+        r     = np.array([[  cy, 0.0,  sy],
+                          [ 0.0, 1.0, 0.0],
+                          [ -sy, 0.0,  cy]])
+        
+        expVert = r @ np.array([1.0,2.0,3.0])
+
+        # Y
+        isequal, msg = mHelp.verifyEqual(mVert.asVector(),
+                                         expVert,
+                                         0.0001) # tol
+        assert isequal, msg
+
+    def test_rotationXY(self):
+
+        # Sample vector:
+        mVert = mMesh.Vert(1.0,2.0,3.0)
+        mVert.rotate(x_deg = 10, y_deg = 20)
+            
+        # Prepare rotation
+        x_deg = 10
+        x_rad = np.deg2rad(x_deg)
+        y_deg = 20
+        y_rad = np.deg2rad(y_deg)
+
+        cx    = np.cos(x_rad)
+        sx    = np.sin(x_rad)
+        cy    = np.cos(y_rad)
+        sy    = np.sin(y_rad)
+
+        rx    = np.array([[ 1.0, 0.0, 0.0],
+                          [ 0.0,  cx, -sx],
+                          [ 0.0,  sx,  cx]])
+        
+        ry    = np.array([[  cy, 0.0,  sy],
+                          [ 0.0, 1.0, 0.0],
+                          [ -sy, 0.0,  cy]])
+        
+        expVert = ry @ rx @ np.array([1.0,2.0,3.0])
+
+        # XY
+        isequal, msg = mHelp.verifyEqual(mVert.asVector(),
+                                         expVert,
+                                         0.0001) # tol
+        assert isequal, msg
 
 class Test_Edge:
     def setup_class(self):
@@ -73,8 +197,8 @@ class Test_Edge:
     def test_basic(self):
 
         # Create edge from A/B
-        mVertA = mMesh.vert(0.0,1.0,0.0)
-        mVertB = mMesh.vert(1.0,0.0,0.0)
+        mVertA = mMesh.Vert(0.0,1.0,0.0)
+        mVertB = mMesh.Vert(1.0,0.0,0.0)
 
         mEdge = mMesh.edge(mVertA,mVertB)
 
@@ -105,11 +229,11 @@ class Test_Face:
     def test_3verts(self):
 
         # Create edge from A/B
-        mVertA = mMesh.vert(0.0,1.0,0.0)
-        mVertB = mMesh.vert(1.0,0.0,0.0)
-        mVertC = mMesh.vert(0.0,0.0,1.0)
+        mVertA = mMesh.Vert(0.0,1.0,0.0)
+        mVertB = mMesh.Vert(1.0,0.0,0.0)
+        mVertC = mMesh.Vert(0.0,0.0,1.0)
 
-        mFace = mMesh.face((mVertA,mVertB,mVertC))
+        mFace = mMesh.Face((mVertA,mVertB,mVertC))
 
         # X
         verts = mFace.getVerts()
@@ -121,12 +245,12 @@ class Test_Face:
     def test_4verts(self):
 
         # Create edge from A/B
-        mVertA = mMesh.vert(0.0,1.0,0.0)
-        mVertB = mMesh.vert(1.0,0.0,0.0)
-        mVertC = mMesh.vert(0.0,0.0,1.0)
-        mVertD = mMesh.vert(1.0,0.0,1.0)
+        mVertA = mMesh.Vert(0.0,1.0,0.0)
+        mVertB = mMesh.Vert(1.0,0.0,0.0)
+        mVertC = mMesh.Vert(0.0,0.0,1.0)
+        mVertD = mMesh.Vert(1.0,0.0,1.0)
 
-        mFace = mMesh.face((mVertA,mVertB,mVertC,mVertD))
+        mFace = mMesh.Face((mVertA,mVertB,mVertC,mVertD))
 
         # X
         verts = mFace.getVerts()
@@ -139,9 +263,276 @@ class Test_Face:
     def test_2verts(self):
 
         # Create edge from A/B
-        mVertA = mMesh.vert(0.0,1.0,0.0)
-        mVertB = mMesh.vert(1.0,0.0,0.0)
+        mVertA = mMesh.Vert(0.0,1.0,0.0)
+        mVertB = mMesh.Vert(1.0,0.0,0.0)
 
         with pytest.raises(AssertionError, match="at least 3 verts expected"):
-            mFace = mMesh.face((mVertA,mVertB))
+            mFace = mMesh.Face((mVertA,mVertB))
+
+    def test_vertIndex(self):
+
+        # Create edge from A/B
+        mVert0 = mMesh.Vert(0.0,1.0,0.0)
+        mVert1 = mMesh.Vert(1.0,0.0,0.0)
+        mVert2 = mMesh.Vert(0.0,0.0,1.0)
+        mVert3 = mMesh.Vert(1.0,0.0,1.0)
+        mVert4 = mMesh.Vert(1.0,0.0,1.0)
+        mVert5 = mMesh.Vert(1.0,0.0,1.0)
+        mVert6 = mMesh.Vert(1.0,0.0,1.0)
+        mVert7 = mMesh.Vert(1.0,0.0,1.0)
+        mVert8 = mMesh.Vert(1.0,0.0,1.0)
+        mVert9 = mMesh.Vert(1.0,0.0,1.0)
+
+        mFace = mMesh.Face((mVert3,mVert6,mVert7,mVert8))
+        vertList = (mVert0,mVert1,mVert2,mVert3,mVert4,mVert5,
+                    mVert6,mVert7,mVert8,mVert9)
         
+        vertIndex = mMesh.Face.getVertIndex(mFace,vertList)
+
+                # XY
+        isequal, msg = mHelp.verifyEqual(vertIndex,
+                                         (3,6,7,8),
+                                         0.0001) # tol
+        assert isequal, msg
+        
+class Test_Airfoil:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+
+        # Create edge from A/B
+        airfoilA = mMesh.Airfoil(2,4, 5,40)
+        airfoilB = mMesh.Airfoil(2,4,12,40)
+
+        plt.style.use('fivethirtyeight')
+        fH = plt.figure()
+        aH1 = fH.add_subplot(2, 1, 1)
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        aH2 = fH.add_subplot(2, 1, 2)
+        aH2.axis('equal')
+        aH2.set_xlabel('x[m]')
+        aH2.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+        
+        for iVertA,iVertB in zip(airfoilA.vertList(),airfoilB.vertList()):
+            
+            aH1.plot(iVertA.asVector()[0],
+                     iVertA.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='b',
+                     markerfacecolor='b',
+                     markeredgecolor='b')
+            
+            aH2.plot(iVertB.asVector()[0],
+                     iVertB.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='b',
+                     markerfacecolor='b',
+                     markeredgecolor='b')            
+
+        plt.draw()
+        plt.close(fH)
+
+        assert True
+        
+    def test_translate(self):
+
+        # Create edge from A/B
+        airfoilA = mMesh.Airfoil(2,4,5,40)
+        airfoilB = mMesh.Airfoil(2,4,5,40)
+
+        airfoilB.translate(np.array([0.1,0.2,0.0]))
+
+        plt.style.use('fivethirtyeight')
+        fH = plt.figure()
+        aH1 = fH.add_subplot(1, 1, 1)
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+        
+        for iVertA,iVertB in zip(airfoilA.vertList(),airfoilB.vertList()):
+            aH1.plot(iVertA.asVector()[0],
+                     iVertA.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='b',
+                     markerfacecolor='b',
+                     markeredgecolor='b')
+            
+            aH1.plot(iVertB.asVector()[0],
+                     iVertB.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='1',
+                     markerfacecolor='r',
+                     markeredgecolor='r')
+
+        plt.draw()
+        plt.close(fH)
+
+        assert True
+
+    def test_scale(self):
+
+        # Create edge from A/B
+        airfoilA = mMesh.Airfoil(2,4,5,40)
+        airfoilB = mMesh.Airfoil(2,4,5,40)
+
+        airfoilB.scale(1.5)
+
+        plt.style.use('fivethirtyeight')
+        fH = plt.figure()
+        aH1 = fH.add_subplot(1, 1, 1)
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+        
+        for iVertA,iVertB in zip(airfoilA.vertList(),airfoilB.vertList()):
+            aH1.plot(iVertA.asVector()[0],
+                     iVertA.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='b',
+                     markerfacecolor='b',
+                     markeredgecolor='b')
+            
+            aH1.plot(iVertB.asVector()[0],
+                     iVertB.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='1',
+                     markerfacecolor='r',
+                     markeredgecolor='r')
+
+        plt.draw()
+        plt.close(fH)
+
+        assert True
+
+    def test_rotate(self):
+
+        # Create edge from A/B
+        airfoilA = mMesh.Airfoil(2,4,5,40)
+        airfoilB = mMesh.Airfoil(2,4,5,40)
+
+        airfoilB.rotate(z_deg = 30)
+
+        plt.style.use('fivethirtyeight')
+        fH = plt.figure()
+        aH1 = fH.add_subplot(1, 1, 1)
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+        
+        for iVertA,iVertB in zip(airfoilA.vertList(),airfoilB.vertList()):
+            aH1.plot(iVertA.asVector()[0],
+                     iVertA.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='b',
+                     markerfacecolor='b',
+                     markeredgecolor='b')
+            
+            aH1.plot(iVertB.asVector()[0],
+                     iVertB.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='1',
+                     markerfacecolor='r',
+                     markeredgecolor='r')
+
+        plt.draw()
+        plt.close(fH)
+
+        assert True
+
+    def test_rotateAtPoint(self):
+
+        # Create edge from A/B
+        airfoilA = mMesh.Airfoil(0,0,10,40)
+        airfoilB = mMesh.Airfoil(0,0,10,40)
+
+        airfoilB.rotateAtPoint(z_deg = 10,
+                               t = np.array([0.25,0,0]))
+
+        plt.style.use('fivethirtyeight')
+        fH = plt.figure()
+        aH1 = fH.add_subplot(1, 1, 1)
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+        
+        for iVertA,iVertB in zip(airfoilA.vertList(),airfoilB.vertList()):
+            aH1.plot(iVertA.asVector()[0],
+                     iVertA.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='b',
+                     markerfacecolor='b',
+                     markeredgecolor='b')
+            
+            aH1.plot(iVertB.asVector()[0],
+                     iVertB.asVector()[1],
+                     linestyle='-',
+                     marker='o',
+                     color='1',
+                     markerfacecolor='r',
+                     markeredgecolor='r')
+
+        plt.draw()
+        plt.close(fH)
+
+        assert True
+
+    def test_link(self):
+
+        # Create edge from A/B
+        airfoilA = mMesh.Airfoil(0,0,10,40)
+        airfoilB = mMesh.Airfoil(0,0,10,40)
+
+        airfoilB.translate(np.array([0.1,0.2,0.0]))
+
+        faceList = mMesh.Airfoil.link(airfoilA,airfoilB)
+
+        assert True
+
+    def test_disp(self):
+
+        # Create edge from A/B
+        mVertA = mMesh.Airfoil(2,4,5,10)
+        mVertA.disp()
+
+        assert True
