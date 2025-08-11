@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy             as np
 import pytest
 import msim.lib          as mlib
@@ -200,7 +201,7 @@ class Test_Edge:
         mVertA = mMesh.Vert(0.0,1.0,0.0)
         mVertB = mMesh.Vert(1.0,0.0,0.0)
 
-        mEdge = mMesh.edge(mVertA,mVertB)
+        mEdge = mMesh.Edge(mVertA,mVertB)
 
         # X
         verts = mEdge.getVerts()
@@ -208,6 +209,39 @@ class Test_Edge:
         assert verts.a is mVertA
         assert verts.b is mVertB
 
+    def test_plot(self):
+
+        # Create edge from A/B
+        mVert0 = mMesh.Vert( 0.5, 0.5, 0.0)
+        mVert1 = mMesh.Vert( 0.5,-0.5, 0.0)
+        mVert2 = mMesh.Vert(-0.5,-0.5, 0.0)
+        mVert3 = mMesh.Vert(-0.5, 0.5, 0.0)
+
+        mEdge1 = mMesh.Edge(mVert0,mVert1)
+        mEdge2 = mMesh.Edge(mVert1,mVert2)
+        mEdge3 = mMesh.Edge(mVert2,mVert3)
+        mEdge4 = mMesh.Edge(mVert3,mVert0)
+
+        # Create 3D plot
+        fig = plt.figure()
+        aH1 = fig.add_subplot(111, projection='3d')
+        
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+
+        mEdge1.plot(aH1)
+        mEdge2.plot(aH1)
+        mEdge3.plot(aH1)
+        mEdge4.plot(aH1)
+
+        plt.draw()
+        plt.close(fig)
+
+        assert True
 
 class Test_Face:
     def setup_class(self):
@@ -294,6 +328,45 @@ class Test_Face:
                                          (3,6,7,8),
                                          0.0001) # tol
         assert isequal, msg
+    def test_plot(self):
+
+        verts = [[0, 0, 0],
+                 [1, 0, 0],
+                 [1, 1, 0],
+                 [0, 1, 0]]
+            
+        face = [verts]
+
+        # Create edge from A/B
+        mVert0 = mMesh.Vert(0.0,0.0,0.0)
+        mVert1 = mMesh.Vert(0.0,1.0,0.0)
+        mVert2 = mMesh.Vert(1.0,1.0,0.0)
+        mVert3 = mMesh.Vert(1.0,0.0,0.0)
+
+        mFace = mMesh.Face((mVert0,mVert1,mVert2,mVert3))
+
+        # Create 3D plot
+        fig = plt.figure()
+        aH1 = fig.add_subplot(111, projection='3d')
+
+        mFace.plot(aH1)
+
+        # # Add the face to the plot
+        # poly = Poly3DCollection(face, facecolors='skyblue', edgecolors='black', linewidths=1, alpha=0.8)
+        # aH1.add_collection3d(poly)
+        
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+        
+
+        plt.draw()
+        plt.close(fig)
+
+        assert True
         
 class Test_Airfoil:
     def setup_class(self):
@@ -523,16 +596,154 @@ class Test_Airfoil:
         airfoilA = mMesh.Airfoil(0,0,10,40)
         airfoilB = mMesh.Airfoil(0,0,10,40)
 
-        airfoilB.translate(np.array([0.1,0.2,0.0]))
+        airfoilB.translate(np.array([0.0,0.5,0.0]))
 
-        faceList = mMesh.Airfoil.link(airfoilA,airfoilB)
+        (faceList,edgeList) = mMesh.Airfoil.link(airfoilA,airfoilB)
+
+        plt.style.use('fivethirtyeight')
+        fH = plt.figure()
+        aH1 = fH.add_subplot(111, projection='3d')
+
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+
+        # Plot airfoils
+        airfoilA.plot(aH1)
+        airfoilB.plot(aH1)
+
+        aH1.set_xlim( 1.1,-0.1)
+        aH1.set_ylim( 0.6,-0.6)
+        aH1.set_zlim(-0.6, 0.6)
+        aH1.view_init(elev=20,
+                      azim=-70)
+        
+        for iFace in faceList:
+            iFace.plot(aH1)
+
+        for iEdge in edgeList:
+            iEdge.plot(aH1)            
+
+        plt.draw()
+        plt.close(fH)
 
         assert True
 
     def test_disp(self):
 
         # Create edge from A/B
-        mVertA = mMesh.Airfoil(2,4,5,10)
-        mVertA.disp()
+        airfoilA = mMesh.Airfoil(2,4,5,10)
+        airfoilA.disp()
+
+        assert True
+
+    def test_plot(self):
+
+        # Create edge from A/B
+        airfoilA = mMesh.Airfoil(2,4,5,10)
+
+        # Create 3D plot
+        fig = plt.figure()
+        aH1 = fig.add_subplot(111, projection='3d')
+        
+        aH1.axis('equal')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+
+        airfoilA.plot(aH1)
+
+        aH1.set_xlim( 1.1,-0.1)
+        aH1.set_ylim( 0.6,-0.6)
+        aH1.set_zlim(-0.6, 0.6)
+        aH1.view_init(elev=0,
+                      azim=-90)
+        
+        plt.draw()
+        plt.close(fig)
+
+        assert True
+
+class Test_Cube:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+
+        origin = np.array([1.0,1.0,1.0])
+        mCube = mMesh.Cube(size = 1,
+                           origin = origin)
+        # X
+        faces = mCube.getFaces()
+
+        # Create 3D plot
+        fH = plt.figure()
+        aH1 = fH.add_subplot(111, projection='3d')
+        aH1.set_xlabel('x[m]')
+        aH1.set_ylabel('y[m]')
+
+        plt.ion()
+        plt.show(block=False)
+
+        aH1.scatter(origin[0], origin[1], origin[2], color='blue', s=25)
+        for iFace in faces:
+            iFace.plot(aH1)
+
+        plt.draw()
+        plt.close(fH)
+
+        assert True
+
+class Test_Wing:
+    def setup_class(self):
+        # Class setup:
+        pass
+
+    def teardown_class(self):
+        # Class teardown:
+        pass
+
+    def setup(self):
+        # Method setup:
+        pass
+
+    def teardown(self):
+        # Method teardown:
+        pass
+
+    def test_basic(self):
+
+        # Create simple wing:
+        aWing = mMesh.Wing('testWing', # name
+                           0.0, # startX_m
+                           0.0, # startY_m: float,
+                           0.0, # startZ_m: float,
+                           1.0, # rootChord_m
+                           np.array([2.0,2.0]), # M
+                           np.array([4.0,4.0]), # P
+                           np.array([12.0,12.0]), # XX
+                           np.array([0.0,0.0]), # twist_deg
+                           np.array([0.0,0.0]), # dihed_deg
+                           np.array([1.0,1.0]), # b_m
+                           np.array([1.0,1.0]), # taperRatio
+                           np.array([0.0,0.0]), # sweep_deg
+                           50) # nPoint
 
         assert True

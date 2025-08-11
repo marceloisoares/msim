@@ -1,15 +1,55 @@
 
 
 Actions:
-	fazer vert
-	fazer edge
-	fazer face
-	fazer airfoil mesh 
-		- list vertices
-		- list edges
-		- transformation matrix
-		- get vertices
-		- get edges
+	fazer mVert
+	fazer mEdge
+	fazer mFace
+	fazer mFace index OK
+	plot Face OK 
+	create cube OK
+	plot Vert OK
+	prepare ops (union, subtract, etc.) OK
+	Have a better understanding of the commands OK
+		
+	prepare bmesh.ops (e.g. bevel) OK
+	prepare bmesh.ops (e.g. cut an object) OK
+	duplicate object + merge object OK
+		
+	create blender module inside msim OK
+	
+	link two airfoils OK
+		plot edges OK
+		plot airfoil OK
+		plot faces two airfoils OK
+		
+	Create wing:
+		create wing with correct chord <parei aqui: Fazer airfoil list needs to be nElem>
+		create wing with correct sweep
+		create wing with correct dihed
+		create wing with correct rotation
+		create wing with correct airfoil
+		create wing with correct interpolation
+		
+		constructor: copy chord script
+		add flaps
+		
+	
+	convert mVert to bVert
+	convert mFace to bFace
+	create functions inside blender
+	
+	transformation matrix
+		- create static method: link two Airfoils OK
+		
+	fazer wing:
+		create list airfoils
+		create list vertices
+		add airfoil
+		add link 
+		create static methods	
 		
 		<parei aqui - continuar na lista de vertx >
 		
+		
+	fazer fuselage
+		interpolate like openvsp
